@@ -1,0 +1,16 @@
+run:
+  build-tags:
+    - js
+    - wasm
+
+linters:
+  enable-all: true
+  fast: false
+  disable:
+    - maligned # deprecated
+    - scopelint # deprecated
+    - golint # deprecated
+    - interfacer # deprecated
+    - gci # annoying
+    - varnamelen # annoying
+    - paralleltest # potentially harmful
