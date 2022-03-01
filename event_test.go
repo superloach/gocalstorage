@@ -27,9 +27,9 @@ var _ = (func() struct{} {
 			panic("no local")
 		}
 
-		local.SetItem(key, value)
-		local.SetItem(key, value2)
-		local.RemoveItem(key)
+		local.Set(key, value)
+		local.Set(key, value2)
+		local.Remove(key)
 
 		os.Exit(0)
 	}
@@ -58,20 +58,20 @@ func TestEvent(t *testing.T) {
 		"<iframe src=\""+location+sender+"\"></iframe>\n",
 	)
 
-	t.Run("SetItem1", testEventSetItem1(evs))
-	t.Run("SetItem2", testEventSetItem2(evs))
-	t.Run("RemoveItem", testEventRemoveItem(evs))
+	t.Run("Set1", testEventSet1(evs))
+	t.Run("Set2", testEventSet2(evs))
+	t.Run("Remove", testEventRemove(evs))
 }
 
-func testEventSetItem1(evs <-chan *gs.Event) func(*testing.T) {
+func testEventSet1(evs <-chan *gs.Event) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
 		ev := <-evs
 
 		k, _ := ev.Key()
-		_, ok := ev.OldValue()
-		nv, _ := ev.NewValue()
+		_, ok := ev.Old()
+		nv, _ := ev.New()
 
 		if ok || k != key || nv != value {
 			t.Fatal("wrong event")
@@ -79,15 +79,15 @@ func testEventSetItem1(evs <-chan *gs.Event) func(*testing.T) {
 	}
 }
 
-func testEventSetItem2(evs <-chan *gs.Event) func(*testing.T) {
+func testEventSet2(evs <-chan *gs.Event) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
 		ev := <-evs
 
 		k, _ := ev.Key()
-		ov, _ := ev.OldValue()
-		nv, _ := ev.NewValue()
+		ov, _ := ev.Old()
+		nv, _ := ev.New()
 
 		if k != key || ov != value || nv != value2 {
 			t.Fatal("wrong event")
@@ -95,15 +95,15 @@ func testEventSetItem2(evs <-chan *gs.Event) func(*testing.T) {
 	}
 }
 
-func testEventRemoveItem(evs <-chan *gs.Event) func(*testing.T) {
+func testEventRemove(evs <-chan *gs.Event) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
 		ev := <-evs
 
 		k, _ := ev.Key()
-		ov, _ := ev.OldValue()
-		_, ok := ev.NewValue()
+		ov, _ := ev.Old()
+		_, ok := ev.New()
 
 		if k != key || ov != value2 || ok {
 			t.Fatal("wrong event")

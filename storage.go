@@ -3,18 +3,14 @@
 package gocalstorage
 
 import (
+	"encoding/json"
 	"syscall/js"
 
 	"github.com/pkg/errors"
 )
 
-var (
-	// ErrNoLocalStorage occurs when the localStorage property is null.
-	ErrNoLocalStorage = errors.New("no localStorage")
-
-	// ErrNoSessionStorage occurs when the sessionStorage property is null.
-	ErrNoSessionStorage = errors.New("no sessionStorage")
-)
+// ErrJSONNull occurs when null is encountered before parsing JSON.
+var ErrJSONNull = errors.New("null before json")
 
 // Storage represents a JavaScript Storage object.
 type Storage struct {
@@ -65,10 +61,10 @@ func (s *Storage) Key(n int) (string, bool) {
 	return k.String(), true
 }
 
-// GetItem retrieves the value associated with the given key in the Storage.
+// Get retrieves the value associated with the given key in the Storage.
 //
 // If the key does not exist in the Storage, the second return value is false.
-func (s *Storage) GetItem(key string) (string, bool) {
+func (s *Storage) Get(key string) (string, bool) {
 	v := s.val.Call("getItem", key)
 
 	if v.IsNull() {
@@ -78,13 +74,44 @@ func (s *Storage) GetItem(key string) (string, bool) {
 	return v.String(), true
 }
 
-// SetItem associates the given key with the given value in the Storage.
-func (s *Storage) SetItem(key, val string) {
+// GetJSON combines Get with json.Unmarshal. The second argument should be a
+// pointer, like with json.Unmarshal.
+//
+// If the key does not exist in the Storage, ErrJSONNull is returned. Any other
+// errors are from JSON parsing.
+func (s *Storage) GetJSON(key string, val interface{}) error {
+	data, ok := s.Get(key)
+	if !ok {
+		return ErrJSONNull
+	}
+
+	err := json.Unmarshal([]byte(data), val)
+	if err != nil {
+		return errors.Wrap(err, "json parse")
+	}
+
+	return nil
+}
+
+// Set associates the given key with the given value in the Storage.
+func (s *Storage) Set(key, val string) {
 	s.val.Call("setItem", key, val)
 }
 
-// RemoveItem removes the given key from the Storage, if it exists.
-func (s *Storage) RemoveItem(key string) {
+// SetJSON combines Set with json.Marshal.
+func (s *Storage) SetJSON(key string, val interface{}) error {
+	data, err := json.Marshal(val)
+	if err != nil {
+		return errors.Wrap(err, "json marshal")
+	}
+
+	s.Set(key, string(data))
+
+	return nil
+}
+
+// Remove removes the given key from the Storage, if it exists.
+func (s *Storage) Remove(key string) {
 	s.val.Call("removeItem", key)
 }
 

@@ -36,7 +36,7 @@ func testStorage(t *testing.T, sto *gs.Storage) {
 
 	t.Run("Length", testStorageLength(sto))
 	t.Run("Key", testStorageKey(sto))
-	t.Run("GetItem", testStorageGetItem(sto))
+	t.Run("Get", testStorageGet(sto))
 }
 
 func testStorageLength(sto *gs.Storage) func(*testing.T) {
@@ -48,13 +48,13 @@ func testStorageLength(sto *gs.Storage) func(*testing.T) {
 			t.Fatalf("expected length 0, got %d", l)
 		}
 
-		sto.SetItem(key, value)
+		sto.Set(key, value)
 
 		if l := sto.Length(); l != 1 {
 			t.Fatalf("expected length 1 after set, got %d", l)
 		}
 
-		sto.RemoveItem(key)
+		sto.Remove(key)
 
 		if l := sto.Length(); l != 0 {
 			t.Fatalf("expected length 0 after remove, got %d", l)
@@ -67,7 +67,7 @@ func testStorageKey(sto *gs.Storage) func(*testing.T) {
 		t.Helper()
 		sto.Clear()
 
-		sto.SetItem(key, value)
+		sto.Set(key, value)
 
 		k, ok := sto.Key(0)
 		if !ok || k != key {
@@ -75,7 +75,7 @@ func testStorageKey(sto *gs.Storage) func(*testing.T) {
 		}
 
 		for i := 0; i < 100; i++ {
-			sto.SetItem(strconv.Itoa(i), "poop")
+			sto.Set(strconv.Itoa(i), "poop")
 		}
 
 		k1, _ := sto.Key(50)
@@ -87,33 +87,33 @@ func testStorageKey(sto *gs.Storage) func(*testing.T) {
 	}
 }
 
-func testStorageGetItem(sto *gs.Storage) func(*testing.T) {
+func testStorageGet(sto *gs.Storage) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		sto.Clear()
 
-		sto.SetItem(key, value)
+		sto.Set(key, value)
 
-		v, ok := sto.GetItem(key)
+		v, ok := sto.Get(key)
 		if !ok || v != value {
 			t.Fatalf("expected set value of %q, got %q", value, v)
 		}
 
-		sto.RemoveItem(key)
+		sto.Remove(key)
 
-		_, ok = sto.GetItem(key)
+		_, ok = sto.Get(key)
 		if ok {
 			t.Fatalf("key should no longer be set")
 		}
 
-		_, ok = sto.GetItem("poop fart")
+		_, ok = sto.Get("poop fart")
 		if ok {
 			t.Fatalf("poop fart shouldn't happen")
 		}
 
-		sto.SetItem("", value)
+		sto.Set("", value)
 
-		v, ok = sto.GetItem("")
+		v, ok = sto.Get("")
 		if !ok || v != value {
 			t.Fatalf("empty key got %q, not %q", v, value)
 		}

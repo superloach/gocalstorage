@@ -3,6 +3,7 @@
 package gocalstorage
 
 import (
+	"encoding/json"
 	"net/url"
 	"syscall/js"
 
@@ -72,25 +73,63 @@ func (e *Event) Key() (string, bool) {
 	return k.String(), !k.IsNull()
 }
 
-// OldValue returns the old value associated with the Event. If the underlying
+// Old returns the old value associated with the Event. If the underlying
 // value is null, the second return value will be false.
-func (e *Event) OldValue() (string, bool) {
+func (e *Event) Old() (string, bool) {
 	v := e.val.Get("oldValue")
 
 	return v.String(), !v.IsNull()
 }
 
-// NewValue returns the new value associated with the Event. If the underlying
+// OldJSON combines Old with json.Unmarshal. The second argument should be a
+// pointer, like with json.Unmarshal.
+//
+// If the underlying property is null, ErrJSONNull is returned. Any other errors
+// are from JSON parsing.
+func (e *Event) OldJSON(val interface{}) error {
+	old, ok := e.Old()
+	if !ok {
+		return ErrJSONNull
+	}
+
+	err := json.Unmarshal([]byte(old), val)
+	if err != nil {
+		return errors.Wrap(err, "json unmarshal")
+	}
+
+	return nil
+}
+
+// New returns the new value associated with the Event. If the underlying
 // value is null, the second return value will be false.
-func (e *Event) NewValue() (string, bool) {
+func (e *Event) New() (string, bool) {
 	v := e.val.Get("newValue")
 
 	return v.String(), !v.IsNull()
 }
 
+// NewJSON combines New with json.Unmarshal. The second argument should be a
+// pointer, like with json.Unmarshal.
+//
+// If the underlying property is null, ErrJSONNull is returned. Any other errors
+// are from JSON parsing.
+func (e *Event) NewJSON(val interface{}) error {
+	ne, ok := e.New()
+	if !ok {
+		return ErrJSONNull
+	}
+
+	err := json.Unmarshal([]byte(ne), val)
+	if err != nil {
+		return errors.Wrap(err, "json unmarshal")
+	}
+
+	return nil
+}
+
 // URL returns the URL associated with the Event. If the underlying value is
 // null, the second return value will be false.
-func (e *Event) URLString() (string, bool) {
+func (e *Event) URL() (string, bool) {
 	us := e.val.Get("url")
 
 	if us.IsNull() {
@@ -100,11 +139,11 @@ func (e *Event) URLString() (string, bool) {
 	return us.String(), true
 }
 
-// URL returns the URL associated with the Event, converting it to a Go URL for
-// convenience. If the underlying value is null, the first and second return
-// values will be nil and ErrNullURL, respectively.
-func (e *Event) URL() (*url.URL, error) {
-	us, ok := e.URLString()
+// ParseURL returns the URL associated with the Event, parsing it into a
+// *url.URL for convenience. If the underlying value is null, the first and
+// second return values will be nil and ErrNullURL, respectively.
+func (e *Event) ParseURL() (*url.URL, error) {
+	us, ok := e.URL()
 	if !ok {
 		return nil, ErrNullURL
 	}
