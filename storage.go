@@ -9,8 +9,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrJSONNull occurs when null is encountered before parsing JSON.
-var ErrJSONNull = errors.New("null before json")
+// ErrNullJSON occurs when null is encountered before parsing JSON.
+var ErrNullJSON = errors.New("null before json")
+
+// ErrJSONNull exists for backward compatibility.
+// TODO: remove in v0.3.0.
+var ErrJSONNull = ErrNullJSON
 
 // Storage represents a JavaScript Storage object.
 type Storage struct {
@@ -77,12 +81,12 @@ func (s *Storage) Get(key string) (string, bool) {
 // GetJSON combines Get with json.Unmarshal. The second argument should be a
 // pointer, like with json.Unmarshal.
 //
-// If the key does not exist in the Storage, ErrJSONNull is returned. Any other
+// If the key does not exist in the Storage, ErrNullJSON is returned. Any other
 // errors are from JSON parsing.
 func (s *Storage) GetJSON(key string, val interface{}) error {
 	data, ok := s.Get(key)
 	if !ok {
-		return ErrJSONNull
+		return ErrNullJSON
 	}
 
 	err := json.Unmarshal([]byte(data), val)

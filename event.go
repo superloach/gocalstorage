@@ -10,9 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrNullURL occurs when calling Event.URL, and the underlying JavaScript value
-// is null.
-var ErrNullURL = errors.New("url is null")
+// ErrNullURL occurs when null is encountered before parsing a URL.
+var ErrNullURL = errors.New("null before url")
 
 // Event represent a JavaScript StorageEvent.
 //
