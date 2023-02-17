@@ -12,10 +12,6 @@ import (
 // ErrNullJSON occurs when null is encountered before parsing JSON.
 var ErrNullJSON = errors.New("null before json")
 
-// ErrJSONNull exists for backward compatibility.
-// TODO: remove in v0.3.0.
-var ErrJSONNull = ErrNullJSON
-
 // Storage represents a JavaScript Storage object.
 type Storage struct {
 	val js.Value

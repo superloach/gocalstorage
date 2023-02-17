@@ -88,7 +88,7 @@ func (e *Event) Old() (string, bool) {
 func (e *Event) OldJSON(val interface{}) error {
 	old, ok := e.Old()
 	if !ok {
-		return ErrJSONNull
+		return ErrNullJSON
 	}
 
 	err := json.Unmarshal([]byte(old), val)
@@ -115,7 +115,7 @@ func (e *Event) New() (string, bool) {
 func (e *Event) NewJSON(val interface{}) error {
 	ne, ok := e.New()
 	if !ok {
-		return ErrJSONNull
+		return ErrNullJSON
 	}
 
 	err := json.Unmarshal([]byte(ne), val)
