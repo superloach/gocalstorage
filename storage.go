@@ -17,10 +17,14 @@ type Storage struct {
 	val js.Value
 }
 
-// Local retrieves a Storage value from the global property localStorage, or nil
-// if no such property exists.
-func Local() *Storage {
-	s := js.Global().Get("localStorage")
+const (
+	LocalKey   string = "localStorage"
+	SessionKey string = "sessionStorage"
+)
+
+// IntoStorage converts a js.Value into a Storage value, or nil if the value is
+// null.
+func IntoStorage(s js.Value) *Storage {
 	if s.IsNull() {
 		return nil
 	}
@@ -30,18 +34,16 @@ func Local() *Storage {
 	}
 }
 
-// Session retrieves a Storage value from the global property sessionStorage, or
-// nil if no such property exists.
-func Session() *Storage {
-	s := js.Global().Get("localStorage")
-	if s.IsNull() {
-		return nil
-	}
+//nolint:gochecknoglobals // only need fetched once
+var (
+	// Local is a Storage value retrieved from the global property localStorage,
+	// or nil if no such property exists.
+	Local = IntoStorage(js.Global().Get(LocalKey))
 
-	return &Storage{
-		val: s,
-	}
-}
+	// Session is a Storage value retrieved from the global property
+	// sessionStorage, or nil if no such property exists.
+	Session = IntoStorage(js.Global().Get(SessionKey))
+)
 
 // Length retrieves the underlying length property of the Storage.
 func (s *Storage) Length() int {

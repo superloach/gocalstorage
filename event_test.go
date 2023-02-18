@@ -17,40 +17,28 @@ const (
 	value2 = "value2"
 )
 
-// run as early as possible!
-var _ = (func() struct{} {
-	hash := js.Global().Get("location").Get("hash").String()
+//nolint:gochecknoglobals // hash only needs 1 lookup
+var hash = js.Global().Get("location").Get("hash").String()
 
+//nolint:gochecknoinits // whatever
+func init() {
 	if hash == sender {
-		local := gs.Local()
-		if local == nil {
-			panic("no local")
-		}
-
-		local.Set(key, value)
-		local.Set(key, value2)
-		local.Remove(key)
+		gs.Local.Set(key, value)
+		gs.Local.Set(key, value2)
+		gs.Local.Remove(key)
 
 		os.Exit(0)
 	}
-
-	return struct{}{}
-})()
+}
 
 func TestEvent(t *testing.T) {
-	hash := js.Global().Get("location").Get("hash").String()
 	if hash != "" {
 		t.Fatal("test shouldn't be running from helper")
 	}
 
-	local := gs.Local()
-	if local == nil {
-		t.Fatal("no local")
-	}
-
 	location := js.Global().Get("location").Get("href").String()
 
-	evs, _ := local.Listen()
+	evs, _ := gs.Local.Listen()
 
 	body := js.Global().Get("document").Get("body")
 	html := body.Get("innerHTML").String()

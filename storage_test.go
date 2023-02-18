@@ -12,23 +12,13 @@ import (
 func TestLocalStorage(t *testing.T) {
 	t.Parallel()
 
-	local := gs.Local()
-	if local == nil {
-		t.Fatal("local should be available in test environment")
-	}
-
-	testStorage(t, local)
+	testStorage(t, gs.Local)
 }
 
 func TestSessionStorage(t *testing.T) {
 	t.Parallel()
 
-	session := gs.Session()
-	if session == nil {
-		t.Fatal("session should be available in test environment")
-	}
-
-	testStorage(t, session)
+	testStorage(t, gs.Session)
 }
 
 func testStorage(t *testing.T, sto *gs.Storage) {
